@@ -1,7 +1,7 @@
 import { Member } from "@/types/Member";
 import { RootStackParamList } from "@/app/(tabs)";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -17,29 +17,32 @@ function HomeScreen({ navigation }: Props) {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchMembers = useCallback(async () => {
+    try {
+      const res = await fetch("https://jsonplaceholder.typicode.com/users");
+      if (!res.ok) throw new Error("Failed to fetch team members");
+      const data = await res.json();
+
+      const formatted: Member[] = data.map((user: any) => ({
+        id: user.id.toString(),
+        name: user.name,
+        role: user.company?.bs || "Team Member",
+      }));
+      setMembers(formatted);
+      setError(null);
+    } catch (err) {
+      setError((err as Error).message || "Something went wrong");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchMembers = async () => {
-      try {
-        const res = await fetch("https://jsonplaceholder.typicode.com/users");
-        if (!res.ok) throw new Error("Failed to fetch team members");
-        const data = await res.json();
-
-        const formatted: Member[] = data.map((user: any) => ({
-          id: user.id.toString(),
-          name: user.name,
-          role: user.company?.bs || "Team Member",
-        }));
-        setMembers(formatted);
-        setError(null);
-      } catch (err) {
-        setError((err as Error).message || "Something went wrong");
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchMembers();
-  }, []);
+  }, [fetchMembers]);
 
   if (loading) {
     return (
@@ -49,6 +52,20 @@ function HomeScreen({ navigation }: Props) {
       </View>
     );
   }
+
+  if (error) {
+    return (
+      <View style={styles.center}>
+        <Text style={{ color: "red", fontWeight: "bold" }}>⚠️ {error}</Text>
+      </View>
+    );
+  }
+
+  const handleAddMember = (newMember: Member) => {
+    setMembers((prev) => [...prev, newMember]);
+  };
+
+  navigation.navigate("AddMember", { onAdd: handleAddMember });
 
   return (
     <FlatList
@@ -65,6 +82,11 @@ function HomeScreen({ navigation }: Props) {
       )}
       ListHeaderComponent={<Text style={styles.title}>Team Members</Text>}
       ListEmptyComponent={<Text style={styles.empty}>No team members yet</Text>}
+      refreshing={refreshing}
+      onRefresh={() => {
+        setRefreshing(true);
+        fetchMembers();
+      }}
     />
   );
 }
