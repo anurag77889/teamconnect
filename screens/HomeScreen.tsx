@@ -10,10 +10,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Button from "@/components/Button";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 
-function HomeScreen({ navigation }: Props) {
+function HomeScreen({ navigation, route }: Props) {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +45,15 @@ function HomeScreen({ navigation }: Props) {
     fetchMembers();
   }, [fetchMembers]);
 
+  const newMember = route.params?.newMember;
+
+  useEffect(() => {
+    if (newMember) {
+      setMembers((prev) => [...prev, newMember]);
+      navigation.setParams({ newMember: undefined });
+    }
+  }, [navigation, newMember]);
+
   if (loading) {
     return (
       <View style={styles.center}>
@@ -61,33 +71,35 @@ function HomeScreen({ navigation }: Props) {
     );
   }
 
-  const handleAddMember = (newMember: Member) => {
-    setMembers((prev) => [...prev, newMember]);
-  };
-
-  navigation.navigate("AddMember", { onAdd: handleAddMember });
-
   return (
-    <FlatList
-      data={members}
-      keyExtractor={(item) => item.id}
-      renderItem={({ item }) => (
-        <TouchableOpacity
-          style={styles.memberCard}
-          onPress={() => navigation.navigate("Profile", { member: item })}
-        >
-          <Text style={styles.memberName}>{item.name}</Text>
-          <Text style={styles.memberRole}>{item.role}</Text>
-        </TouchableOpacity>
-      )}
-      ListHeaderComponent={<Text style={styles.title}>Team Members</Text>}
-      ListEmptyComponent={<Text style={styles.empty}>No team members yet</Text>}
-      refreshing={refreshing}
-      onRefresh={() => {
-        setRefreshing(true);
-        fetchMembers();
-      }}
-    />
+    <View>
+      <Button
+        title="Add Member"
+        onPress={() => navigation.navigate("AddMember")}
+      />
+      <FlatList
+        data={members}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={styles.memberCard}
+            onPress={() => navigation.navigate("Profile", { member: item })}
+          >
+            <Text style={styles.memberName}>{item.name}</Text>
+            <Text style={styles.memberRole}>{item.role}</Text>
+          </TouchableOpacity>
+        )}
+        ListHeaderComponent={<Text style={styles.title}>Team Members</Text>}
+        ListEmptyComponent={
+          <Text style={styles.empty}>No team members yet</Text>
+        }
+        refreshing={refreshing}
+        onRefresh={() => {
+          setRefreshing(true);
+          fetchMembers();
+        }}
+      />
+    </View>
   );
 }
 

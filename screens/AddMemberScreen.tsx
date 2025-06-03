@@ -3,29 +3,20 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "@/app/(tabs)"; // Adjust import path as needed
 import React, { useState } from "react";
 
-import {
-  View,
-  TextInput,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  Alert,
-} from "react-native";
-import { useRoute } from "@react-navigation/native";
-import { useNavigation } from "expo-router";
+import { View, StyleSheet, Text, Alert } from "react-native";
+
+import Button from "@/components/Button";
+import Input from "@/components/Input";
 
 type Props = NativeStackScreenProps<RootStackParamList, "AddMember"> & {
-  addMember: (member: Member) => void;
+  onAdd: (newMember: Member) => void;
 };
 
-export default function AddMemberScreen({ navigation, addMember }: Props) {
+export default function AddMemberScreen({ navigation, onAdd }: Props) {
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const route = useRoute();
-  const nav = useNavigation();
-  const { onAdd } = route.params as { onAdd: (member: Member) => void };
 
   const handleSubmit = async () => {
     if (!name.trim() || !role.trim()) return;
@@ -53,7 +44,7 @@ export default function AddMemberScreen({ navigation, addMember }: Props) {
       Alert.alert("Success", "Member added!");
       setName("");
       setRole("");
-      navigation.goBack();
+      navigation.navigate("Home", { newMember });
     } catch (err) {
       setError((err as Error).message || "Something went wrong");
     } finally {
@@ -64,22 +55,24 @@ export default function AddMemberScreen({ navigation, addMember }: Props) {
   return (
     <View style={styles.container}>
       <View>
-        <Text>Add New Member</Text>
+        <Text style={styles.addMemberTitle}>Add New Member</Text>
       </View>
-      <TextInput
+      {/* <TextInput
         placeholder="Name"
         value={name}
         onChangeText={setName}
         style={styles.input}
-      />
-      <TextInput
+      /> */}
+      <Input label="Name" value={name} onChangeText={setName} />
+      {/* <TextInput
         placeholder="Role"
         value={role}
         onChangeText={setRole}
         style={styles.input}
-      />
+      /> */}
+      <Input label="Role" value={role} onChangeText={setRole} />
       {error && <Text style={{ color: "red" }}>{error}</Text>}
-      <TouchableOpacity
+      {/* <TouchableOpacity
         disabled={loading}
         style={styles.addButton}
         onPress={handleSubmit}
@@ -87,7 +80,11 @@ export default function AddMemberScreen({ navigation, addMember }: Props) {
         <Text style={styles.buttonText}>
           {loading ? "Adding..." : "Add Member"}
         </Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
+      <Button
+        title={loading ? "Adding..." : "Add Member"}
+        onPress={handleSubmit}
+      />
     </View>
   );
 }
@@ -97,6 +94,12 @@ const styles = StyleSheet.create({
     padding: 20,
     flex: 1,
     justifyContent: "center",
+  },
+  addMemberTitle: {
+    marginBottom: 10,
+    textAlign: "center",
+    fontSize: 24,
+    fontWeight: "bold",
   },
   input: {
     borderWidth: 2,

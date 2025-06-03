@@ -11,10 +11,11 @@ import AddMemberScreen from "@/screens/AddMemberScreen";
 import ProfileScreen from "@/screens/ProfileScreen";
 import GetStartedScreen from "@/screens/GetStartedScreen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { TeamProvider } from "@/context/TeamContext";
 
 export type RootStackParamList = {
   GetStartedScreen: undefined;
-  Home: undefined;
+  Home: { newMember?: Member } | undefined;
   AddMember: undefined;
   Profile: { member: Member };
 };
@@ -59,24 +60,29 @@ export default function App() {
   };
 
   return (
-    <NavigationIndependentTree>
-      <NavigationContainer>
-        <Stack.Navigator initialRouteName="GetStartedScreen">
-          <Stack.Screen
-            name="GetStartedScreen"
-            options={{ headerShown: false }}
-          >
-            {(props) => <GetStartedScreen {...props} />}
-          </Stack.Screen>
-          <Stack.Screen name="Home">
-            {(props) => <HomeScreen {...props} members={members} />}
-          </Stack.Screen>
-          <Stack.Screen name="AddMember">
-            {(props) => <AddMemberScreen {...props} addMember={addMember} />}
-          </Stack.Screen>
-          <Stack.Screen name="Profile" component={ProfileScreen}></Stack.Screen>
-        </Stack.Navigator>
-      </NavigationContainer>
-    </NavigationIndependentTree>
+    <TeamProvider>
+      <NavigationIndependentTree>
+        <NavigationContainer>
+          <Stack.Navigator initialRouteName="GetStartedScreen">
+            <Stack.Screen
+              name="GetStartedScreen"
+              options={{ headerShown: false }}
+            >
+              {(props) => <GetStartedScreen {...props} />}
+            </Stack.Screen>
+            <Stack.Screen name="Home">
+              {(props) => <HomeScreen {...props} members={members} />}
+            </Stack.Screen>
+            <Stack.Screen name="AddMember">
+              {(props) => <AddMemberScreen {...props} onAdd={addMember} />}
+            </Stack.Screen>
+            <Stack.Screen
+              name="Profile"
+              component={ProfileScreen}
+            ></Stack.Screen>
+          </Stack.Navigator>
+        </NavigationContainer>
+      </NavigationIndependentTree>
+    </TeamProvider>
   );
 }
