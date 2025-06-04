@@ -71,7 +71,7 @@ export default function App() {
               {(props) => <GetStartedScreen {...props} />}
             </Stack.Screen>
             <Stack.Screen name="Home">
-              {(props) => <HomeScreen {...props} members={members} />}
+              {(props) => <HomeScreen {...props} />}
             </Stack.Screen>
             <Stack.Screen name="AddMember">
               {(props) => <AddMemberScreen {...props} onAdd={addMember} />}
